@@ -1,2 +1,2 @@
 ENV_SAMPLE: dev
-ARN_SAMPLE: arn:aws:sqs:ap-northeast-1:XXXXXXX:dev
+ARN_SAMPLE: arn:aws:sqs:ap-northeast-1:073835062099:dev
