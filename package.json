@@ -5,8 +5,8 @@
   "main": "sample.js",
   "scripts": {
     "test": "jest",
-    "sls-dev": "serverless deploy --aws-profile xxxxxxxxx --verbose --stage dev",
-    "sls-prod": "serverless deploy --aws-profile xxxxxxxxx --verbose --stage prod",
+    "sls-dev": "serverless deploy --aws-profile 073835062099 --verbose --stage dev",
+    "sls-prod": "serverless deploy --aws-profile 073835062099 --verbose --stage prod",
     "lint": "eslint src/",
     "lint-fix": "eslint src/ --fix"
   },

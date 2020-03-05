@@ -12,7 +12,7 @@ provider:
   runtime: nodejs12.x
   # デフォルトでのデプロイステージ
   stage: dev
-  region: us-west-2
+  region: ap-northeast-1
   tracing: true
   iamRoleStatements:
    - Effect: "Allow"
@@ -43,7 +43,7 @@ functions:
     handler: src/sample.handler
     environment:
       # 環境変数を読み込む
-      ENV_SAMPLE: ${self:custom.environment.${self:provider.stage}.ENV_SAMPLE}
+      ENV_SAMPLE: ${self:custom.environment.${self:provider.stage}.ENV_SAMPLE} #dev
       QUEUE_NAME:
         Fn::GetAtt:
           # 後述のresourcesで作成するSQSを指定
@@ -61,7 +61,7 @@ functions:
     timeout: 4
     memorySize: 512
     environment:
-      ENV_SAMPLE: ${self:custom.environment.${self:provider.stage}.ENV_SAMPLE}
+      ENV_SAMPLE: ${self:custom.environment.${self:provider.stage}.ENV_SAMPLE} #dev
     # SQSトリガーは設定に失敗することがあるので、初回のみ手動で設定が必要な場合がある
     events:
       - sqs:
@@ -83,7 +83,8 @@ resources:
         RedrivePolicy:
           deadLetterTargetArn:
             # Serverless Frameworkで作成するresources以外を指定する場合、環境変数を利用してARNで指定する
-            ${self:custom.environment.${self:provider.stage}.ARN_SAMPLE}
+            arn:aws:sqs:ap-northeast-1:073835062099:SampleServerlessFrameworkQueueDLQ	
+            #${self:custom.environment.${self:provider.stage}.ARN_SAMPLE} #arn:aws:sqs:ap-northeast-1:073835062099:dev
           # 最大リトライ回数
           maxReceiveCount: 1
     SampleServerlessFrameworkQueueDLQ:
