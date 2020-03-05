@@ -1,0 +1,90 @@
+# デプロイされるリソースのprefixになる(例: etl-serverless-xxxxx-XXXXXXX)
+service: etl-serverless
+
+# AWS X-Rayのための設定。とりあえず入れておく(有効化するかは各Lambdaなどで判断すればOK)
+plugins:
+  - serverless-plugin-tracing
+
+# デプロイ先の情報
+# デフォルトの設定なので、各Lambda関数の設定は後述のfunctionで上書き可能
+provider:
+  name: aws
+  runtime: nodejs12.x
+  # デフォルトでのデプロイステージ
+  stage: dev
+  region: us-west-2
+  tracing: true
+  iamRoleStatements:
+   - Effect: "Allow"
+     Action:
+       - sqs:*
+       - cloudwatch:*
+       - xray:PutTraceSegments
+       - xray:PutTelemetryRecords
+       - logs:CreateLogStream
+       - logs:PutLogEvents
+     Resource: "*"
+  # デフォルト値。実際には各functionsで上書きする
+  timeout: 3
+  memorySize: 256
+
+# 変数定義などをここで行う
+custom:
+  defaultStage: dev
+  # 環境変数ファイルの場所
+  environment:
+    dev: ${file(./env/dev.yml)}
+    prod: ${file(./env/prod.yml)}
+
+
+functions:
+  # cronで起動
+  cron-event-sample:
+    handler: src/sample.handler
+    environment:
+      # 環境変数を読み込む
+      ENV_SAMPLE: ${self:custom.environment.${self:provider.stage}.ENV_SAMPLE}
+      QUEUE_NAME:
+        Fn::GetAtt:
+          # 後述のresourcesで作成するSQSを指定
+          - SampleServerlessFrameworkQueue
+          - QueueName
+    events:
+      - schedule: cron(0 1 * * ? *)
+
+  # SQSのイベントで起動
+  sqs-event-sample:
+    handler: src/sample.handler
+    # 同時実行数制限
+    reservedConcurrency: 5
+    # デフォルト値を上書き
+    timeout: 4
+    memorySize: 512
+    environment:
+      ENV_SAMPLE: ${self:custom.environment.${self:provider.stage}.ENV_SAMPLE}
+    # SQSトリガーは設定に失敗することがあるので、初回のみ手動で設定が必要な場合がある
+    events:
+      - sqs:
+        arn:
+          Fn::GetAtt:
+          - SampleServerlessFrameworkQueue
+          - Arn
+        # 同時に取得するqueueのバッチサイズ
+        batchSize: 1
+
+resources:
+  Resources:
+    SampleServerlessFrameworkQueue:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        # 使うLambdaのタイムアウトより長めに設定すること(短いとデプロイエラーになる)
+        VisibilityTimeout: 5
+        # 再処理ポリシーとDLQの設定
+        RedrivePolicy:
+          deadLetterTargetArn:
+            # Serverless Frameworkで作成するresources以外を指定する場合、環境変数を利用してARNで指定する
+            ${self:custom.environment.${self:provider.stage}.ARN_SAMPLE}
+          # 最大リトライ回数
+          maxReceiveCount: 1
+    SampleServerlessFrameworkQueueDLQ:
+      Type: "AWS::SQS::Queue"

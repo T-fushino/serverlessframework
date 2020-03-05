@@ -1,0 +1,28 @@
+{
+  "name": "serverless-framework-ready",
+  "version": "1.0.0",
+  "description": "",
+  "main": "sample.js",
+  "scripts": {
+    "test": "jest",
+    "sls-dev": "serverless deploy --aws-profile xxxxxxxxx --verbose --stage dev",
+    "sls-prod": "serverless deploy --aws-profile xxxxxxxxx --verbose --stage prod",
+    "lint": "eslint src/",
+    "lint-fix": "eslint src/ --fix"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-xray-sdk": "^2.4.0"
+  },
+  "devDependencies": {
+    "aws-sdk": "^2.566.0",
+    "eslint": "^6.6.0",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-jest": "^23.1.1",
+    "jest": "^24.9.0",
+    "serverless": "^1.57.0",
+    "serverless-plugin-tracing": "^2.0.0"
+  }
+}
