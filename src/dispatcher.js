@@ -7,8 +7,8 @@ const sqs = new AWS.SQS({ region: 'ap-northeast-1' });
 
 // 関数のサンプル非同期処理
 exports.handler = async (event, context) => {
-  const key1  = event.Records[0].body;
-  const body  =  event;
+  const {key1}  = event;
+  const {body}  =  event;
   const string = JSON.stringify(event);
   console.log(event);
   // 環境変数を使用するサンプル
